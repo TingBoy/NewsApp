@@ -19,7 +19,7 @@ public class NetworkUtils {
 
     public static final String base_url = "https://newsapi.org/v1/articles?source=the-next-web";
     public static final String sort_parameter = "latest";
-    public static final String query_parameter = api.key();
+    public static final String query_parameter = api.key(); //pulls api key from separate class
 
     public static URL makeURL() {
         Uri uri = Uri.parse(base_url).buildUpon()
