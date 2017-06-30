@@ -3,11 +3,18 @@ package com.example.tingboy.newsapp;
 import android.net.Uri;
 import android.util.Log;
 
+import com.example.tingboy.newsapp.model.NewsItem;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -56,5 +63,21 @@ public class NetworkUtils {
         } finally {
             urlConnection.disconnect();
         }
+    }
+    //parse JSON method
+    public static ArrayList<NewsItem> parseJSON(String json) throws JSONException {
+        ArrayList<NewsItem> result = new ArrayList<>();
+        JSONObject articles = new JSONObject(json);
+        JSONArray items = articles.getJSONArray("articles");
+
+        for(int i = 0; i < items.length(); i++) {
+            JSONObject item = items.getJSONObject(i);
+            String title = item.getString("title");
+            String desc = item.getString("description");
+            String date = item.getString("publishedAt");
+            NewsItem nItem = new NewsItem(title, desc, date);
+            result.add(nItem);
+        }
+        return result;
     }
 }

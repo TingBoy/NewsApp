@@ -1,8 +1,11 @@
 package com.example.tingboy.newsapp;
 
 import android.os.AsyncTask;
+import android.support.v4.app.LoaderManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,28 +15,34 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.tingboy.newsapp.model.NewsItem;
+
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacksAr{
     public static final String TAG = "MainActivity";
 
+    private NewsAdapter mNewsAdapter;
+    private RecyclerView rV;
     private ProgressBar progress;
-    private TextView textView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        textView = (TextView) findViewById(R.id.news_data);
+        rV = (RecyclerView) findViewById(R.id.recyclerview_news);
         progress = (ProgressBar) findViewById(R.id.progressBar);
 
+        rV.setLayoutManager(new LinearLayoutManager(this));
     }
 
     private void loadNewsData() {
         new NetworkTask().execute();
     }
+
 
     public class NetworkTask extends AsyncTask<URL, Void, String> {
 
@@ -65,9 +74,9 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(s);
             progress.setVisibility(View.GONE);
             if(s==null) {
-                textView.setText("Sorry, no text was received");
+                rV.setText("Sorry, no text was received");
             } else {
-                textView.setText(s);
+                rV.setText(s);
             }
         }
     }
@@ -87,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_display) {
-            textView.setText("");
+            mNewsAdapter.setNewsData(null);
             loadNewsData();
             return true;
         }
