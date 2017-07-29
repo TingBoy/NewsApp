@@ -72,10 +72,12 @@ public class NetworkUtils {
 
         for(int i = 0; i < items.length(); i++) {
             JSONObject item = items.getJSONObject(i);
+            String author = item.getString("author");
             String title = item.getString("title");
             String desc = item.getString("description");
+            String url = item.getString("url");
             String date = item.getString("publishedAt");
-            NewsItem nItem = new NewsItem(title, desc, date);
+            NewsItem nItem = new NewsItem(author, title, desc, date, url);
             result.add(nItem);
         }
         return result;

@@ -6,15 +6,23 @@ package com.example.tingboy.newsapp.model;
 
 public class NewsItem {
 
+    private String author;
     private String title;
     private String desc;
     private String date;
+    private String url;
 
-    public NewsItem(String title, String desc, String date) {
+    public NewsItem(String author, String title, String desc, String date, String url) {
+        this.author = author;
         this.title = title;
         this.desc = desc;
         this.date = date;
+        this.url = url;
     }
+
+    public String getAuthor() {return author; }
+
+    public void setAuthor(String author) { this.author = author; }
 
     public String getTitle() {
         return title;
@@ -39,5 +47,9 @@ public class NewsItem {
     public void setDate(String date) {
         this.date = date;
     }
+
+    public String getUrl() { return url;}
+
+    public void setUrl(String url) { this.url = url; }
 
 }

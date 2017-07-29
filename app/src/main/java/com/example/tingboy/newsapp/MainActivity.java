@@ -17,14 +17,15 @@ import android.widget.TextView;
 
 import com.example.tingboy.newsapp.model.NewsItem;
 
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacksAr{
+public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
 
-    private NewsAdapter mNewsAdapter;
     private RecyclerView rV;
     private ProgressBar progress;
 
@@ -37,30 +38,31 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         progress = (ProgressBar) findViewById(R.id.progressBar);
 
         rV.setLayoutManager(new LinearLayoutManager(this));
+
+        NewsTask task = new NewsTask();
+        task.execute();
     }
 
-    private void loadNewsData() {
-        new NetworkTask().execute();
-    }
 
-
-    public class NetworkTask extends AsyncTask<URL, Void, String> {
+    public class NewsTask extends AsyncTask<URL, Void, ArrayList<NewsItem>> {
 
 
         @Override
-        protected String doInBackground(URL... params) {
-            String result = null;
+        protected ArrayList<NewsItem> doInBackground(URL... params) {
+            ArrayList<NewsItem> result = null;
             URL url = NetworkUtils.makeURL();
             Log.d(TAG, "url: " + url.toString());
             try {
                 String jsonResponse = NetworkUtils.getResponseFromHttpUrl(url);
-                return jsonResponse;
+                result = NetworkUtils.parseJSON(jsonResponse);
 
             } catch(IOException e) {
                 e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
 
-            return null;
+            return result;
         }
 
         @Override
@@ -70,13 +72,21 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
 
         @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
+        protected void onPostExecute(ArrayList<NewsItem> data) {
+            super.onPostExecute(data);
+
             progress.setVisibility(View.GONE);
-            if(s==null) {
-                rV.setText("Sorry, no text was received");
+            if(data==null) {
+                NewsAdapter adapter = new NewsAdapter(data, new NewsAdapter.ItemClickListener() {
+
+                    @Override
+                    public void onItemClick(int itemIndex) {
+                        Uri uri = Uri.parse(data.get(itemIndex).getUrl();)
+                    }
+                    "Sorry, no text was received")
+                };
             } else {
-                rV.setText(s);
+                rV.setText(data);
             }
         }
     }
