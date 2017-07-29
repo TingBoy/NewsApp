@@ -38,7 +38,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ItemHolder>{
     }
 
 
-
+    //Creates new viewholder for recyclerview
     @Override
     public ItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         context = parent.getContext();
@@ -51,11 +51,13 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ItemHolder>{
         return holder;
     }
 
+    //Binds and displays the data for recycler view at a specific positions
     @Override
     public void onBindViewHolder(ItemHolder holder, int position) {
         holder.bind(position);
     }
 
+    //Allows the cursor to grab the item count
     @Override
     public int getItemCount() {
         return cursor.getCount();
@@ -68,6 +70,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ItemHolder>{
         TextView date;
         ImageView img;
 
+
         ItemHolder(View view){
             super(view);
             author = (TextView)view.findViewById(R.id.author);
@@ -78,6 +81,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ItemHolder>{
             view.setOnClickListener(this);
         }
 
+        //Sets text of recyclerview to db
         public void bind(int pos){
             cursor.moveToPosition(pos);
             author.setText(cursor.getString(cursor.getColumnIndex(Contract.TABLE_ARTICLES.COLUMN_NAME_AUTHOR)));

@@ -24,12 +24,14 @@ public class ScheduleUtilities {
 
     private static boolean sInitialized;
 
+    //method for scheduling refreshes every minute
     synchronized public static void scheduleRefresh(@NonNull final Context context){
         if(sInitialized) return;
 
         Driver driver = new GooglePlayDriver(context);
         FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(driver);
 
+        //Performs the refresh at specified interval with trigger
         Job constraintRefreshJob = dispatcher.newJobBuilder()
                 .setService(NewsJob.class)
                 .setTag(NEWS_JOB_TAG)

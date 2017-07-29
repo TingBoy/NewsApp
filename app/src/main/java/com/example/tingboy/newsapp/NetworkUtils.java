@@ -27,6 +27,7 @@ public class NetworkUtils {
     public static final String base_url = "https://newsapi.org/v1/articles?source=the-next-web";
     public static final String sort_parameter = "latest";
     public static final String query_parameter = api.key(); //pulls api key from separate class
+    //To make the app work, please either create a java class named api with a String key() that returns your api key OR replace the parameter with your key
 
     public static URL makeURL() {
         Uri uri = Uri.parse(base_url).buildUpon()
@@ -64,7 +65,7 @@ public class NetworkUtils {
         }
         return null;
     }
-    //parse JSON method
+    //parse JSON method that gets all the necessary attributes of the article
     public static ArrayList<NewsItem> parseJSON(String json) throws JSONException {
         ArrayList<NewsItem> result = new ArrayList<>();
         JSONObject articles = new JSONObject(json);

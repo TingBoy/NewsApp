@@ -21,7 +21,7 @@ public class RefreshTasks {
 
     public static final String ACTION_REFRESH = "refresh";
 
-
+    //Refreshes the articles. Completely removes them and replaces with new ones with every refresh
     public static void refreshArticles(Context context) {
         ArrayList<NewsItem> result = null;
         URL url = NetworkUtils.makeURL();

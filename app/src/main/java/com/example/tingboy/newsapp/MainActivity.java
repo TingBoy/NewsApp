@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         };
     }
 
+    //Removes progress bar and binds data at load finish
     @Override
     public void onLoadFinished(Loader<Void> loader, Void data) {
         progress.setVisibility(View.GONE);
