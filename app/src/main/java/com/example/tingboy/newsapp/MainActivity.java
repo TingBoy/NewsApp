@@ -1,7 +1,15 @@
 package com.example.tingboy.newsapp;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,10 +19,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
+import com.example.tingboy.newsapp.model.Contract;
+import com.example.tingboy.newsapp.model.DBHelper;
+import com.example.tingboy.newsapp.model.DatabaseUtils;
 import com.example.tingboy.newsapp.model.NewsItem;
 
 import org.json.JSONException;
@@ -23,11 +32,16 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
-    public static final String TAG = "MainActivity";
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Void>, NewsAdapter.ItemClickListener {
+    static final String TAG = "MainActivity";
 
     private RecyclerView rV;
     private ProgressBar progress;
+    private NewsAdapter adapter;
+    private Cursor cursor;
+    private SQLiteDatabase db;
+
+    private static final int NEWS_LOADER = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,56 +53,75 @@ public class MainActivity extends AppCompatActivity {
 
         rV.setLayoutManager(new LinearLayoutManager(this));
 
-        NewsTask task = new NewsTask();
-        task.execute();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        //checks for first install
+        boolean isFirst = prefs.getBoolean("isfirst", true);
+
+        //if first install, load into db
+        if (isFirst) {
+            load();
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("isfirst", false);
+            editor.commit();
+        }
+
+        //sets the JobDispatcher refresh to 1 minute intervals
+        ScheduleUtilities.scheduleRefresh(this);
+
+        //Loads whats currently in db into recyclerview
+        db = new DBHelper(MainActivity.this).getReadableDatabase();
+        cursor = DatabaseUtils.getAll(db);
+        adapter = new NewsAdapter(cursor, this);
+        rV.setAdapter(adapter);
     }
 
+    //binds the articles to recyclerview
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
 
-    public class NewsTask extends AsyncTask<URL, Void, ArrayList<NewsItem>> {
+    @Override
+    protected void onStop() {
+        super.onStop();
+        db.close();
+        cursor.close();
+    }
 
+    //AsyncTask replaced with AsyncTaskLoader
+    @Override
+    public Loader<Void> onCreateLoader(int id, final Bundle args) {
+        return new AsyncTaskLoader<Void>(this) {
 
-        @Override
-        protected ArrayList<NewsItem> doInBackground(URL... params) {
-            ArrayList<NewsItem> result = null;
-            URL url = NetworkUtils.makeURL();
-            Log.d(TAG, "url: " + url.toString());
-            try {
-                String jsonResponse = NetworkUtils.getResponseFromHttpUrl(url);
-                result = NetworkUtils.parseJSON(jsonResponse);
-
-            } catch(IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
+            @Override
+            protected void onStartLoading() {
+                super.onStartLoading();
+                progress.setVisibility(View.VISIBLE);
             }
 
-            return result;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            progress.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<NewsItem> data) {
-            super.onPostExecute(data);
-
-            progress.setVisibility(View.GONE);
-            if(data==null) {
-                NewsAdapter adapter = new NewsAdapter(data, new NewsAdapter.ItemClickListener() {
-
-                    @Override
-                    public void onItemClick(int itemIndex) {
-                        Uri uri = Uri.parse(data.get(itemIndex).getUrl();)
-                    }
-                    "Sorry, no text was received")
-                };
-            } else {
-                rV.setText(data);
+            @Override
+            public Void loadInBackground() {
+                RefreshTasks.refreshArticles(MainActivity.this);
+                return null;
             }
-        }
+
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Void> loader, Void data) {
+        progress.setVisibility(View.GONE);
+        db = new DBHelper(MainActivity.this).getReadableDatabase();
+        cursor = DatabaseUtils.getAll(db);
+
+        adapter = new NewsAdapter(cursor, this);
+        rV.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Void> loader) {
     }
 
     @Override
@@ -103,14 +136,29 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
+        int itemNumber = item.getItemId();
 
-        if (id == R.id.action_display) {
-            mNewsAdapter.setNewsData(null);
-            loadNewsData();
-            return true;
+        if (itemNumber == R.id.refresh) {
+            load();
         }
 
-        return super.onOptionsItemSelected(item);
+        return true;
+    }
+
+    @Override
+    public void onItemClick(Cursor cursor, int clickedItemIndex) {
+        cursor.moveToPosition(clickedItemIndex);
+        String url = cursor.getString(cursor.getColumnIndex(Contract.TABLE_ARTICLES.COLUMN_NAME_URL));
+        Log.d(TAG, String.format("Url %s", url));
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+        startActivity(intent);
+    }
+
+    public void load() {
+        LoaderManager loaderManager = getSupportLoaderManager();
+        loaderManager.restartLoader(NEWS_LOADER, null, this).forceLoad();
+
     }
 }

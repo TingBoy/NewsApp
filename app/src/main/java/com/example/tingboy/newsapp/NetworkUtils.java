@@ -54,30 +54,33 @@ public class NetworkUtils {
             Scanner scanner = new Scanner(in);
             scanner.useDelimiter("\\A");
 
-            boolean hasInput = scanner.hasNext();
-            if (hasInput) {
-                return scanner.next();
-            } else {
-                return null;
-            }
+            String result = (scanner.hasNext()) ? scanner.next() : null;
+            return result;
+
+        }catch (IOException e){
+            e.printStackTrace();
         } finally {
             urlConnection.disconnect();
         }
+        return null;
     }
     //parse JSON method
     public static ArrayList<NewsItem> parseJSON(String json) throws JSONException {
         ArrayList<NewsItem> result = new ArrayList<>();
         JSONObject articles = new JSONObject(json);
         JSONArray items = articles.getJSONArray("articles");
+        String imgUrl = null;
 
         for(int i = 0; i < items.length(); i++) {
             JSONObject item = items.getJSONObject(i);
             String author = item.getString("author");
             String title = item.getString("title");
             String desc = item.getString("description");
-            String url = item.getString("url");
             String date = item.getString("publishedAt");
-            NewsItem nItem = new NewsItem(author, title, desc, date, url);
+            String url = item.getString("url");
+            imgUrl = item.getString("urlToImage");
+
+            NewsItem nItem = new NewsItem(author, title, desc, date, url, imgUrl);
             result.add(nItem);
         }
         return result;

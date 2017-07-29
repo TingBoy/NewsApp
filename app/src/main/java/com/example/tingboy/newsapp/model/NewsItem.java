@@ -11,13 +11,15 @@ public class NewsItem {
     private String desc;
     private String date;
     private String url;
+    private String imgUrl;
 
-    public NewsItem(String author, String title, String desc, String date, String url) {
+    public NewsItem(String author, String title, String desc, String date, String url, String imgUrl) {
         this.author = author;
         this.title = title;
         this.desc = desc;
         this.date = date;
         this.url = url;
+        this.imgUrl = imgUrl;
     }
 
     public String getAuthor() {return author; }
@@ -52,4 +54,7 @@ public class NewsItem {
 
     public void setUrl(String url) { this.url = url; }
 
+    public String getimgUrl() { return imgUrl;}
+
+    public void setimgUrl(String imgUrl) { this.imgUrl = imgUrl; }
 }
